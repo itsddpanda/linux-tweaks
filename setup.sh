@@ -19,10 +19,17 @@ print_header() {
 install_fonts() {
     echo -e "\n[*] Checking for Nerd Fonts..."
     if grep -qi "microsoft\|wsl" /proc/version >/dev/null 2>&1; then
-        echo "[*] WSL detected. Installing MesloLGS Nerd Font to Windows Host..."
-        echo -e "\033[1;33m[!] A Windows prompt (UAC) will appear asking for Admin permissions.\033[0m"
-        
-        cat << 'EOF' > /tmp/install_font.ps1
+        # Windows/WSL Check: Use PowerShell to check the Windows Registry for the font
+        local is_installed=$(powershell.exe -Command "if ((Get-ItemProperty 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts' -ErrorAction SilentlyContinue | Out-String) -match 'MesloLGS' -or (Get-ItemProperty 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts' -ErrorAction SilentlyContinue | Out-String) -match 'MesloLGS') { echo 'yes' } else { echo 'no' }" | tr -d '\r')
+
+        if [[ "$is_installed" == "yes" ]]; then
+            echo -e "\033[1;34m[i] MesloLGS Nerd Font is already installed on Windows. Skipping download.\033[0m"
+        else
+            echo "[*] WSL detected. Installing MesloLGS Nerd Font to Windows Host..."
+            echo -e "\033[1;33m[!] A Windows prompt (UAC) will appear asking for Admin permissions.\033[0m"
+            
+            cat << 'EOF' > /tmp/install_font.ps1
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $url = "https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Meslo/S/Regular/MesloLGS%20Nerd%20Font%20Regular.ttf"
 $fontPath = "$env:TEMP\MesloLGS_NF.ttf"
 Write-Host "Downloading Font..."
@@ -32,17 +39,23 @@ $fontsFolder = $shellApp.Namespace(0x14)
 $fontsFolder.CopyHere($fontPath, 0x10)
 Write-Host "Font Installed!"
 EOF
-        powershell.exe -ExecutionPolicy Bypass -File /tmp/install_font.ps1
-        rm /tmp/install_font.ps1
-        echo -e "\033[1;32m[✓] Font installed. Remember to set your terminal font to 'MesloLGS NF' in Windows settings!\033[0m"
+            powershell.exe -ExecutionPolicy Bypass -File /tmp/install_font.ps1
+            rm /tmp/install_font.ps1
+            echo -e "\033[1;32m[✓] Font installed. Remember to set your terminal font to 'MesloLGS NF' in Windows settings!\033[0m"
+        fi
     else
-        echo "[*] Native Linux detected. Installing font..."
-        mkdir -p ~/.local/share/fonts
-        curl -s -fLo ~/.local/share/fonts/MesloLGS_NF.ttf https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Meslo/S/Regular/MesloLGS%20Nerd%20Font%20Regular.ttf
-        fc-cache -f -v >/dev/null 2>&1
-        echo -e "\033[1;32m[✓] Font installed.\033[0m"
+        # Native Linux Check: Use fc-list to search installed fonts
+        if fc-list | grep -qi "MesloLGS NF"; then
+            echo -e "\033[1;34m[i] MesloLGS Nerd Font is already installed on Linux. Skipping download.\033[0m"
+        else
+            echo "[*] Native Linux detected. Installing font..."
+            mkdir -p ~/.local/share/fonts
+            curl -s -fLo ~/.local/share/fonts/MesloLGS_NF.ttf https://github.com/ryanoasis/nerd-fonts/raw/master/patched-fonts/Meslo/S/Regular/MesloLGS%20Nerd%20Font%20Regular.ttf
+            fc-cache -f -v >/dev/null 2>&1
+            echo -e "\033[1;32m[✓] Font installed.\033[0m"
+        fi
     fi
-    sleep 3
+    sleep 2
 }
 
 # --- INSTALLATION CORE ---
