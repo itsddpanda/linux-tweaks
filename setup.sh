@@ -2,7 +2,7 @@
 
 # ================= CONFIGURATION =================
 # Replace this with the RAW url of your github file
-GITHUB_BASHRC_URL="https://raw.githubusercontent.com/YOUR_USER/YOUR_REPO/main/custom_bashrc"
+GITHUB_BASHRC_URL="https://raw.githubusercontent.com/itsddpanda/linux-tweaks/main/custom_bashrc"
 
 THEME_FILE="$HOME/.custom_theme.sh"
 SYSTEM_BASHRC="$HOME/.bashrc"
