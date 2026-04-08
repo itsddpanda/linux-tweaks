@@ -3,28 +3,25 @@
 # ==========================================
 
 # === THEME CONFIGURATION ===
-# These variables are managed by setup.sh
-PROMPT_ICON_GIT=""
+PROMPT_ICON_GIT=""
+PROMPT_ICON_GIT_UNSYNCED="󰊢" # NEW: The dirty/unsynced icon from your image
 PROMPT_ICON_BRANCH=""
-PROMPT_ICON_WORKTREE="󰙨"
+PROMPT_ICON_WORKTREE=""
 PROMPT_SYMBOL="✒"
 
-COLOR_USER_BG="\033[48;5;236m" # Dark Gray
-COLOR_USER_FG="\033[38;5;255m" # White
-COLOR_DIR_BG="\033[48;5;117m"  # Vivid Cyan
-COLOR_DIR_FG="\033[38;5;232m"  # Black
-COLOR_GIT_BG="\033[48;5;202m"  # Git Orange
-COLOR_GIT_FG="\033[38;5;255m"  # White
+COLOR_USER_BG="\033[48;5;236m" 
+COLOR_USER_FG="\033[38;5;255m" 
+COLOR_DIR_BG="\033[48;5;117m"  
+COLOR_DIR_FG="\033[38;5;232m"  
+COLOR_GIT_BG="\033[48;5;202m"  
+COLOR_GIT_FG="\033[38;5;255m"  
+COLOR_GIT_UNSYNCED_BG="\033[48;5;166m" 
 COLOR_RESET="\033[0m"
 # ===========================
 
-# Configure 'ls' colors for #093030 Background
-# Folders: Bright cyan/blue (38;5;39), Files: Default, Symlinks: Bright Green (38;5;82)
 export LS_COLORS="di=38;5;39:fi=0:ln=38;5;82:ex=38;5;214"
 alias ls='ls --color=auto'
 
-# --- Path Truncation Logic ---
-# Rules: 1 level from ~ or / = ~/folder or /folder. Else = ~/../folder or /../folder
 prompt_dir() {
     local dir="${PWD}"
     local base=$(basename "$dir")
@@ -47,42 +44,68 @@ prompt_dir() {
 
 # --- Git Status Logic ---
 get_git_info() {
-    # Reset the variable every time you press Enter
-    GIT_PROMPT_TEXT="" 
+    GIT_PROMPT_TEXT=""
+    GIT_REPO_NAME=""
     
     if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        local repo_name=$(basename $(git rev-parse --show-toplevel))
+        GIT_REPO_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null))
         local git_dir=$(git rev-parse --git-dir)
         local branch_name=$(git branch --show-current)
         local git_type_icon="$PROMPT_ICON_BRANCH"
         local git_type_name="$branch_name"
 
-        # Check if worktree
         if [[ "$git_dir" == *".git/worktrees/"* ]]; then
             git_type_icon="$PROMPT_ICON_WORKTREE"
         fi
         
-        # Detached head fallback
         if [[ -z "$branch_name" ]]; then
             git_type_name=$(git rev-parse --short HEAD)
         fi
         
-        # We assign to a variable instead of using echo
-        GIT_PROMPT_TEXT=" working in \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${PROMPT_ICON_GIT} ${repo_name} \[${COLOR_RESET}\] on \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${git_type_icon} ${git_type_name} \[${COLOR_RESET}\]"
+        # Check Sync Status 
+        local branch_bg_color="$COLOR_GIT_BG"
+        local current_git_icon="$PROMPT_ICON_GIT" # Default to synced icon
+        
+        local has_changes=$(git status --porcelain 2>/dev/null)
+        
+        if [[ -n "$has_changes" ]]; then
+            branch_bg_color="$COLOR_GIT_UNSYNCED_BG"
+            current_git_icon="$PROMPT_ICON_GIT_UNSYNCED" # Swap to unsynced icon
+        else
+            # Check for unpushed commits
+            if git rev-parse --abbrev-ref @{u} >/dev/null 2>&1; then
+                local counts=$(git rev-list --count --left-right @{u}...HEAD 2>/dev/null)
+                if [[ "$counts" != "0	0" ]]; then
+                    branch_bg_color="$COLOR_GIT_UNSYNCED_BG"
+                    current_git_icon="$PROMPT_ICON_GIT_UNSYNCED" # Swap to unsynced icon
+                fi
+            fi
+        fi
+        
+        GIT_PROMPT_TEXT=" working in \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${current_git_icon} ${GIT_REPO_NAME} \[${COLOR_RESET}\] on \[${branch_bg_color}\]\[${COLOR_GIT_FG}\] ${git_type_icon} ${git_type_name} \[${COLOR_RESET}\]"
     fi
 }
 
 # --- Construct the Prompt ---
 build_prompt() {
     local user_host="\[${COLOR_USER_BG}\]\[${COLOR_USER_FG}\] \u on \h \[${COLOR_RESET}\]"
-    local folder="\[${COLOR_DIR_BG}\]\[${COLOR_DIR_FG}\] \$(prompt_dir) \[${COLOR_RESET}\]"
+    local current_dir_base=$(basename "${PWD}")
     
-    # Generate the Git string BEFORE building PS1
     get_git_info 
     
-    # Line 1: ╭─ username on host in folder working in git on branch
-    # Line 2: ╰─ time symbol
-    PS1="\n╭─ ${user_host} in ${folder}${GIT_PROMPT_TEXT}\n╰─ \@ ${PROMPT_SYMBOL} "
+    local line1="╭─ ${user_host}"
+    
+    if [[ -n "$GIT_REPO_NAME" && "$current_dir_base" == "$GIT_REPO_NAME" ]]; then
+        line1="${line1}${GIT_PROMPT_TEXT}"
+    elif [[ -n "$GIT_REPO_NAME" ]]; then
+        local folder="\[${COLOR_DIR_BG}\]\[${COLOR_DIR_FG}\] \$(prompt_dir) \[${COLOR_RESET}\]"
+        line1="${line1} in ${folder}${GIT_PROMPT_TEXT}"
+    else
+        local folder="\[${COLOR_DIR_BG}\]\[${COLOR_DIR_FG}\] \$(prompt_dir) \[${COLOR_RESET}\]"
+        line1="${line1} in ${folder}"
+    fi
+    
+    PS1="\n${line1}\n╰─ \@ ${PROMPT_SYMBOL} "
 }
 
 PROMPT_COMMAND=build_prompt
