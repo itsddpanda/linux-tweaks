@@ -46,7 +46,10 @@ prompt_dir() {
 }
 
 # --- Git Status Logic ---
-prompt_git() {
+get_git_info() {
+    # Reset the variable every time you press Enter
+    GIT_PROMPT_TEXT="" 
+    
     if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         local repo_name=$(basename $(git rev-parse --show-toplevel))
         local git_dir=$(git rev-parse --git-dir)
@@ -64,7 +67,8 @@ prompt_git() {
             git_type_name=$(git rev-parse --short HEAD)
         fi
         
-        echo -e " working in \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${PROMPT_ICON_GIT} ${repo_name} \[${COLOR_RESET}\] on \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${git_type_icon} ${git_type_name} \[${COLOR_RESET}\]"
+        # We assign to a variable instead of using echo
+        GIT_PROMPT_TEXT=" working in \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${PROMPT_ICON_GIT} ${repo_name} \[${COLOR_RESET}\] on \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${git_type_icon} ${git_type_name} \[${COLOR_RESET}\]"
     fi
 }
 
@@ -73,9 +77,12 @@ build_prompt() {
     local user_host="\[${COLOR_USER_BG}\]\[${COLOR_USER_FG}\] \u on \h \[${COLOR_RESET}\]"
     local folder="\[${COLOR_DIR_BG}\]\[${COLOR_DIR_FG}\] \$(prompt_dir) \[${COLOR_RESET}\]"
     
+    # Generate the Git string BEFORE building PS1
+    get_git_info 
+    
     # Line 1: ╭─ username on host in folder working in git on branch
     # Line 2: ╰─ time symbol
-    PS1="\n╭─ ${user_host} in ${folder}\$(prompt_git)\n╰─ \@ ${PROMPT_SYMBOL} "
+    PS1="\n╭─ ${user_host} in ${folder}${GIT_PROMPT_TEXT}\n╰─ \@ ${PROMPT_SYMBOL} "
 }
 
 PROMPT_COMMAND=build_prompt

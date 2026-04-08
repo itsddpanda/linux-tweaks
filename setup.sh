@@ -91,9 +91,25 @@ icon_menu() {
             1)
                 echo -e "\nChoose Git Repo Icon (Verified):"
                 echo "1)    (FontAwesome)"
-                read -p "Select [1] or 'b' to go back: " ic
+                echo "2)    (GitHub Octocat)"
+                echo "3)    (Code Angle)"
+                echo "4)    (Terminal Window)"
+                echo "5)    (Git Square)"
+                echo "6)    (Git Commit)"
+                echo "7)    (Git Merge)"
+                echo "8)    (Git Pull Request)"
+                echo "9)    (Git Compare)"
+                read -p "Select [1-9] or 'b' to go back: " ic
                 case $ic in
                     1) update_theme_var "PROMPT_ICON_GIT" "" ;;
+                    2) update_theme_var "PROMPT_ICON_GIT" "" ;;
+                    3) update_theme_var "PROMPT_ICON_GIT" "" ;;
+                    4) update_theme_var "PROMPT_ICON_GIT" "" ;;
+                    5) update_theme_var "PROMPT_ICON_GIT" "" ;;
+                    6) update_theme_var "PROMPT_ICON_GIT" "" ;;
+                    7) update_theme_var "PROMPT_ICON_GIT" "" ;;
+                    8) update_theme_var "PROMPT_ICON_GIT" "" ;;
+                    9) update_theme_var "PROMPT_ICON_GIT" "" ;;
                     b) continue ;;
                 esac
                 ;;
