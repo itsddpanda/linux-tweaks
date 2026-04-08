@@ -89,20 +89,16 @@ icon_menu() {
         
         case $choice in
             1)
-                echo -e "\nChoose Git Repo Icon:"
+                echo -e "\nChoose Git Repo Icon (Verified):"
                 echo "1)    (FontAwesome)"
-                echo "2)    (Devicons)"
-                echo "3)    (Git Alt)"
-                read -p "Select [1-3] or 'b' to go back: " ic
+                read -p "Select [1] or 'b' to go back: " ic
                 case $ic in
                     1) update_theme_var "PROMPT_ICON_GIT" "" ;;
-                    2) update_theme_var "PROMPT_ICON_GIT" "" ;;
-                    3) update_theme_var "PROMPT_ICON_GIT" "" ;;
                     b) continue ;;
                 esac
                 ;;
             2)
-                echo -e "\nChoose Branch Icon:"
+                echo -e "\nChoose Branch Icon (Verified):"
                 echo "1)    (Powerline)"
                 echo "2)    (Fork)"
                 echo "3)    (Octicon Branch)"
@@ -115,15 +111,15 @@ icon_menu() {
                 esac
                 ;;
             3)
-                echo -e "\nChoose Worktree Icon:"
-                echo "1) 󰙨   (Repo structure)"
-                echo "2)    (Tree)"
-                echo "3) 󰊢   (Branching)"
+                echo -e "\nChoose Worktree Icon (Verified):"
+                echo "1)    (Repo Book)"
+                echo "2)    (Directory Folder)"
+                echo "3)    (Sub-Directory Arrow)"
                 read -p "Select [1-3] or 'b' to go back: " ic
                 case $ic in
-                    1) update_theme_var "PROMPT_ICON_WORKTREE" "󰙨" ;;
-                    2) update_theme_var "PROMPT_ICON_WORKTREE" "" ;;
-                    3) update_theme_var "PROMPT_ICON_WORKTREE" "󰊢" ;;
+                    1) update_theme_var "PROMPT_ICON_WORKTREE" "" ;;
+                    2) update_theme_var "PROMPT_ICON_WORKTREE" "" ;;
+                    3) update_theme_var "PROMPT_ICON_WORKTREE" "" ;;
                     b) continue ;;
                 esac
                 ;;
