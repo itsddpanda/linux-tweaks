@@ -1,0 +1,81 @@
+# ==========================================
+# CUSTOM UX BASHRC ENVIRONMENT
+# ==========================================
+
+# === THEME CONFIGURATION ===
+# These variables are managed by setup.sh
+PROMPT_ICON_GIT=""
+PROMPT_ICON_BRANCH=""
+PROMPT_ICON_WORKTREE="󰙨"
+PROMPT_SYMBOL="✒"
+
+COLOR_USER_BG="\033[48;5;236m" # Dark Gray
+COLOR_USER_FG="\033[38;5;255m" # White
+COLOR_DIR_BG="\033[48;5;117m"  # Vivid Cyan
+COLOR_DIR_FG="\033[38;5;232m"  # Black
+COLOR_GIT_BG="\033[48;5;202m"  # Git Orange
+COLOR_GIT_FG="\033[38;5;255m"  # White
+COLOR_RESET="\033[0m"
+# ===========================
+
+# Configure 'ls' colors for #093030 Background
+# Folders: Bright cyan/blue (38;5;39), Files: Default, Symlinks: Bright Green (38;5;82)
+export LS_COLORS="di=38;5;39:fi=0:ln=38;5;82:ex=38;5;214"
+alias ls='ls --color=auto'
+
+# --- Path Truncation Logic ---
+# Rules: 1 level from ~ or / = ~/folder or /folder. Else = ~/../folder or /../folder
+prompt_dir() {
+    local dir="${PWD}"
+    local base=$(basename "$dir")
+    local parent=$(dirname "$dir")
+    
+    if [[ "$dir" == "$HOME" ]]; then
+        echo "~"
+    elif [[ "$parent" == "$HOME" ]]; then
+        echo "~/$base"
+    elif [[ "$dir" == "/" ]]; then
+        echo "/"
+    elif [[ "$parent" == "/" ]]; then
+        echo "/$base"
+    elif [[ "$dir" == "$HOME"* ]]; then
+        echo "~/../$base"
+    else
+        echo "/../$base"
+    fi
+}
+
+# --- Git Status Logic ---
+prompt_git() {
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        local repo_name=$(basename $(git rev-parse --show-toplevel))
+        local git_dir=$(git rev-parse --git-dir)
+        local branch_name=$(git branch --show-current)
+        local git_type_icon="$PROMPT_ICON_BRANCH"
+        local git_type_name="$branch_name"
+
+        # Check if worktree
+        if [[ "$git_dir" == *".git/worktrees/"* ]]; then
+            git_type_icon="$PROMPT_ICON_WORKTREE"
+        fi
+        
+        # Detached head fallback
+        if [[ -z "$branch_name" ]]; then
+            git_type_name=$(git rev-parse --short HEAD)
+        fi
+        
+        echo -e " working in \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${PROMPT_ICON_GIT} ${repo_name} \[${COLOR_RESET}\] on \[${COLOR_GIT_BG}\]\[${COLOR_GIT_FG}\] ${git_type_icon} ${git_type_name} \[${COLOR_RESET}\]"
+    fi
+}
+
+# --- Construct the Prompt ---
+build_prompt() {
+    local user_host="\[${COLOR_USER_BG}\]\[${COLOR_USER_FG}\] \u on \h \[${COLOR_RESET}\]"
+    local folder="\[${COLOR_DIR_BG}\]\[${COLOR_DIR_FG}\] \$(prompt_dir) \[${COLOR_RESET}\]"
+    
+    # Line 1: ╭─ username on host in folder working in git on branch
+    # Line 2: ╰─ time symbol
+    PS1="\n╭─ ${user_host} in ${folder}\$(prompt_git)\n╰─ \@ ${PROMPT_SYMBOL} "
+}
+
+PROMPT_COMMAND=build_prompt
