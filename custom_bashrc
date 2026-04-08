@@ -4,7 +4,7 @@
 
 # === THEME CONFIGURATION ===
 PROMPT_ICON_GIT=""
-PROMPT_ICON_GIT_UNSYNCED="󰊢" # NEW: The dirty/unsynced icon from your image
+PROMPT_ICON_UNSYNCED_MODIFIER="" # NEW: Asterisk modifier
 PROMPT_ICON_BRANCH=""
 PROMPT_ICON_WORKTREE=""
 PROMPT_SYMBOL="✒"
@@ -15,7 +15,7 @@ COLOR_DIR_BG="\033[48;5;117m"
 COLOR_DIR_FG="\033[38;5;232m"  
 COLOR_GIT_BG="\033[48;5;202m"  
 COLOR_GIT_FG="\033[38;5;255m"  
-COLOR_GIT_UNSYNCED_BG="\033[48;5;166m" 
+COLOR_GIT_UNSYNCED_BG="\033[48;5;196m" # Vivid Bright Red
 COLOR_RESET="\033[0m"
 # ===========================
 
@@ -48,9 +48,9 @@ get_git_info() {
     GIT_REPO_NAME=""
     
     if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        GIT_REPO_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null))
-        local git_dir=$(git rev-parse --git-dir)
-        local branch_name=$(git branch --show-current)
+        GIT_REPO_NAME=$(basename $(git rev-parse --show-toplevel 2>/dev/null) | tr -d '\r')
+        local git_dir=$(git rev-parse --git-dir 2>/dev/null | tr -d '\r')
+        local branch_name=$(git branch --show-current 2>/dev/null | tr -d '\r')
         local git_type_icon="$PROMPT_ICON_BRANCH"
         local git_type_name="$branch_name"
 
@@ -59,25 +59,26 @@ get_git_info() {
         fi
         
         if [[ -z "$branch_name" ]]; then
-            git_type_name=$(git rev-parse --short HEAD)
+            git_type_name=$(git rev-parse --short HEAD | tr -d '\r')
         fi
         
         # Check Sync Status 
         local branch_bg_color="$COLOR_GIT_BG"
-        local current_git_icon="$PROMPT_ICON_GIT" # Default to synced icon
+        local current_git_icon="$PROMPT_ICON_GIT"
         
         local has_changes=$(git status --porcelain 2>/dev/null)
         
         if [[ -n "$has_changes" ]]; then
             branch_bg_color="$COLOR_GIT_UNSYNCED_BG"
-            current_git_icon="$PROMPT_ICON_GIT_UNSYNCED" # Swap to unsynced icon
+            # Append the modifier next to the main icon
+            current_git_icon="${PROMPT_ICON_GIT} ${PROMPT_ICON_UNSYNCED_MODIFIER}" 
         else
-            # Check for unpushed commits
             if git rev-parse --abbrev-ref @{u} >/dev/null 2>&1; then
-                local counts=$(git rev-list --count --left-right @{u}...HEAD 2>/dev/null)
+                local counts=$(git rev-list --count --left-right @{u}...HEAD 2>/dev/null | tr -d '\r')
                 if [[ "$counts" != "0	0" ]]; then
                     branch_bg_color="$COLOR_GIT_UNSYNCED_BG"
-                    current_git_icon="$PROMPT_ICON_GIT_UNSYNCED" # Swap to unsynced icon
+                    # Append the modifier next to the main icon
+                    current_git_icon="${PROMPT_ICON_GIT} ${PROMPT_ICON_UNSYNCED_MODIFIER}"
                 fi
             fi
         fi
@@ -89,12 +90,13 @@ get_git_info() {
 # --- Construct the Prompt ---
 build_prompt() {
     local user_host="\[${COLOR_USER_BG}\]\[${COLOR_USER_FG}\] \u on \h \[${COLOR_RESET}\]"
-    local current_dir_base=$(basename "${PWD}")
+    local current_dir_base=$(basename "${PWD}" | tr -d '\r')
     
     get_git_info 
     
     local line1="╭─ ${user_host}"
     
+    # Smart Folder/Git Logic
     if [[ -n "$GIT_REPO_NAME" && "$current_dir_base" == "$GIT_REPO_NAME" ]]; then
         line1="${line1}${GIT_PROMPT_TEXT}"
     elif [[ -n "$GIT_REPO_NAME" ]]; then

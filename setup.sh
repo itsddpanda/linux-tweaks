@@ -94,8 +94,8 @@ icon_menu() {
     while true; do
         print_header
         echo "Select which icon to change:"
-        echo "1. Git Repo Icon (Synced)"
-        echo "2. Git Repo Icon (UNSYNCED)"
+        echo "1. Git Repo Icon (Main)"
+        echo "2. Git Unsynced Modifier (Shows next to main icon)"
         echo "3. Branch Icon"
         echo "4. Worktree Icon"
         echo "5. Go Back"
@@ -103,7 +103,7 @@ icon_menu() {
         
         case $choice in
             1)
-                echo -e "\nChoose Git Repo Icon (Synced):"
+                echo -e "\nChoose Git Repo Icon:"
                 echo "1)    (FontAwesome)"
                 echo "2)    (GitHub Octocat)"
                 echo "3)    (Code Angle)"
@@ -128,19 +128,19 @@ icon_menu() {
                 esac
                 ;;
             2)
-                echo -e "\nChoose Git Repo Icon (UNSYNCED):"
-                echo "1) 󰊢   (Branch/Asterisk - Default)"
-                echo "2)    (Modified Square)"
-                echo "3) * (Octocat + Star)"
-                echo "4) * (Git + Star)"
-                echo "5) !   (Alert Symbol)"
+                echo -e "\nChoose Unsynced Modifier:"
+                echo "1)    (Asterisk - Default)"
+                echo "2)    (Flame)"
+                echo "3)    (Warning Triangle)"
+                echo "4)    (Edit Pencil)"
+                echo "5) [None] (Color change only)"
                 read -p "Select [1-5] or 'b' to go back: " ic
                 case $ic in
-                    1) update_theme_var "PROMPT_ICON_GIT_UNSYNCED" "󰊢" ;;
-                    2) update_theme_var "PROMPT_ICON_GIT_UNSYNCED" "" ;;
-                    3) update_theme_var "PROMPT_ICON_GIT_UNSYNCED" "*" ;;
-                    4) update_theme_var "PROMPT_ICON_GIT_UNSYNCED" "*" ;;
-                    5) update_theme_var "PROMPT_ICON_GIT_UNSYNCED" "!" ;;
+                    1) update_theme_var "PROMPT_ICON_UNSYNCED_MODIFIER" "" ;;
+                    2) update_theme_var "PROMPT_ICON_UNSYNCED_MODIFIER" "" ;;
+                    3) update_theme_var "PROMPT_ICON_UNSYNCED_MODIFIER" "" ;;
+                    4) update_theme_var "PROMPT_ICON_UNSYNCED_MODIFIER" "" ;;
+                    5) update_theme_var "PROMPT_ICON_UNSYNCED_MODIFIER" "" ;;
                     b) continue ;;
                 esac
                 ;;
@@ -176,6 +176,7 @@ icon_menu() {
         sleep 1.5
     done
 }
+
 # --- NEW: Reusable Custom Color Input ---
 custom_color_picker() {
     local bg_var=$1
