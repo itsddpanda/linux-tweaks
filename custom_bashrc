@@ -32,10 +32,10 @@ get_dynamic_elements() {
     
     # 1. Determine Time-of-Day Symbol & Color
     if [ "$hour" -ge 5 ] && [ "$hour" -lt 12 ]; then
-        TIME_ICON="🌅" # Morning
+        TIME_ICON="😪" # Morning
         TIME_COLOR="\[\033[48;5;220m\]\[\033[38;5;232m\]" # Golden Sun
     elif [ "$hour" -ge 12 ] && [ "$hour" -lt 18 ]; then
-        TIME_ICON="☀️ " # Afternoon
+        TIME_ICON="☀️" # Afternoon or 🌞
         TIME_COLOR="\[\033[48;5;33m\]\[\033[38;5;255m\]"  # Sky Blue
     elif [ "$hour" -ge 18 ] && [ "$hour" -lt 22 ]; then
         TIME_ICON="🌙" # Evening
