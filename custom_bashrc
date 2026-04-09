@@ -113,10 +113,21 @@ get_git_info() {
     fi
 }
 
+get_venv_info() {
+    VENV_PROMPT=""
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+        # Just get the name of the folder
+        local venv_name=$(basename "$VIRTUAL_ENV")
+        # Plain text in parentheses with a space
+        VENV_PROMPT="(${venv_name}) "
+    fi
+}
+
 build_prompt() {
     get_dynamic_elements
+    get_venv_info
 
-    local user_host="\[${COLOR_USER_BG}\]\[${COLOR_USER_FG}\] \u on \h \[${COLOR_RESET}\]"
+    local user_host="\[${COLOR_USER_BG}\]\[${VENV_PROMPT}${COLOR_USER_FG}\] \u on \h \[${COLOR_RESET}\]"
     local current_dir_base=$(basename "${PWD}" | tr -d '\r')
 
     get_git_info
